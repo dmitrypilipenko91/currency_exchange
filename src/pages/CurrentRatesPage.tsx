@@ -3,19 +3,30 @@ import { useGetExchangeRates } from "../hooks/useGetExchangeRates";
 import RatesBlock from "../components/RatesBlock";
 import { useNavigate } from "react-router-dom";
 import { paths } from "../utils/paths";
-
-interface CurrencyRates {
-  name: string;
-  sell: string;
-  buy: string;
-}
+import { APIRates } from "../hooks/types";
+import { ConvertedRates, CurrencyRates } from "./types";
+import { addBYN, convertRates } from "./helpers";
+import classes from "./CurrentRatesPage.module.css";
+import {
+  ALL_RATES,
+  BASE_CURRENCY,
+  BASE_CURRENCY_RU,
+  CURRENCIES,
+  CURRENCY_RATES_HEADER_TEXT,
+  ERROR_TEXT,
+  FAVOURITE_RATES,
+  LOADER_TEXT,
+  RATES_CONVERTER,
+  currenciesOptions,
+} from "./constants";
 
 const CurrentRatesPage = () => {
   const { data: rates, isLoading, isError } = useGetExchangeRates();
   const [baseCurrency, setBaseCurrency] = useState(
-    localStorage.getItem("baseCurrency") || "BYN"
+    localStorage.getItem(BASE_CURRENCY) || CURRENCIES.BYN
   );
   const [favourites, setFavourites] = useState<string[]>([]);
+  const [convertedRates, setConvertedRates] = useState<ConvertedRates>({});
 
   const navigate = useNavigate();
 
@@ -31,16 +42,15 @@ const CurrentRatesPage = () => {
     );
   };
 
-  const favouriteRates: CurrencyRates[] = favourites.map((currency) => ({
-    name: currency,
-    sell: rates?.[`${currency}_in`],
-    buy: rates?.[`${currency}_out`],
-  }));
-
-  const allRates = Object.keys(rates || {}).reduce(
-    (acc: CurrencyRates[], key) => {
+  const allRates = Object.keys(rates || {})
+    .reduce((acc: CurrencyRates[], key) => {
       const [currency, type] = key.split("_");
-      if (type === "in" && rates[key] > 0 && !favourites.includes(currency)) {
+      if (
+        rates &&
+        type === "in" &&
+        parseFloat(rates[key]) > 0 &&
+        !favourites.includes(currency)
+      ) {
         acc.push({
           name: currency,
           sell: rates[key],
@@ -48,58 +58,77 @@ const CurrentRatesPage = () => {
         });
       }
       return acc;
-    },
-    []
+    }, [])
+    .filter((rate) => rate.name !== CURRENCIES.BYN); // Исключение BYN явно;
+
+  const updatedRates = [
+    !favourites.includes(CURRENCIES.BYN) &&
+      addBYN(baseCurrency, rates as APIRates),
+    ...allRates.map((rate) => ({
+      ...rate,
+      sell: convertedRates[rate.name]?.sell.toFixed(4) || "1.0000",
+      buy: convertedRates[rate.name]?.buy.toFixed(4) || "1.0000",
+    })),
+  ].filter(Boolean);
+
+  const favouriteRates = favourites.map((currency) =>
+    currency === CURRENCIES.BYN
+      ? addBYN(baseCurrency, rates as APIRates)
+      : {
+          name: currency,
+          sell: convertedRates[currency]?.sell.toFixed(4) || "1.0000",
+          buy: convertedRates[currency]?.buy.toFixed(4) || "1.0000",
+        }
   );
 
   useEffect(() => {
-    localStorage.setItem("baseCurrency", baseCurrency);
+    localStorage.setItem(BASE_CURRENCY, baseCurrency);
   }, [baseCurrency]);
 
-  if (isError) return <p>Ошибка при загрузке данных</p>;
+  useEffect(() => {
+    if (rates) {
+      setConvertedRates(convertRates(baseCurrency, rates));
+    }
+  }, [rates, baseCurrency]);
+
+  if (isError) return <p>{ERROR_TEXT}</p>;
 
   return (
     <div>
-      <h3 style={{ marginBottom: "30px" }}>
-        Текущие курсы валют на {new Date().toLocaleDateString()}
-      </h3>
-      {isLoading && <p>Загрузка курсов валют...</p>}
-      <div style={{ marginBottom: "20px" }}>
+      <h3 className={classes.header}>{CURRENCY_RATES_HEADER_TEXT}</h3>
+      {isLoading && <p>{LOADER_TEXT}</p>}
+      <div className={classes.base_currency_group}>
         <label>
-          Базовая валюта:
+          {BASE_CURRENCY_RU}:
           <select
-            style={{ marginLeft: "10px" }}
             value={baseCurrency}
             onChange={(e) => setBaseCurrency(e.target.value)}
           >
-            <option value="BYN">BYN</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
+            {currenciesOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </label>
       </div>
       <RatesBlock
-        title="Избранные курсы"
+        title={FAVOURITE_RATES}
         rates={favouriteRates}
         onToggleFavourite={toggleFavourite}
         favourites={favourites}
       />
       <RatesBlock
-        title="Все курсы"
-        rates={allRates}
+        title={ALL_RATES}
+        rates={updatedRates as CurrencyRates[]}
         onToggleFavourite={toggleFavourite}
         favourites={favourites}
       />
       <button
-        style={{
-          padding: "3px",
-          borderWidth: "1px",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
+        className={classes.move_to_converter_btn}
         onClick={moveToConverter}
       >
-        Конвертер валют
+        {RATES_CONVERTER}
       </button>
     </div>
   );

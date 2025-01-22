@@ -1,11 +1,12 @@
-import { getCurrencyNameWithSuffix } from "../utils/helpers";
-
-interface RatesBlockProps {
-  title: string;
-  rates: { name: string; sell: string; buy: string }[];
-  onToggleFavourite: (currency: string) => void;
-  favourites: string[];
-}
+import {
+  ADD_TO_FAVOURITES,
+  BUY,
+  REMOVE_FROM_FAVOURITES,
+  SELL,
+} from "../pages/constants";
+import { getCurrencyNameWithSuffix } from "./helpers";
+import { RatesBlockProps } from "./types";
+import classes from "./RatesBlock.module.css";
 
 const RatesBlock: React.FC<RatesBlockProps> = ({
   title,
@@ -15,27 +16,18 @@ const RatesBlock: React.FC<RatesBlockProps> = ({
 }) => {
   return (
     <div>
-      <h4 style={{ marginBottom: "10px" }}>{title}</h4>
+      <h4 className={classes.header}>{title}</h4>
       <div>
         {rates.map((rate) => (
-          <div key={rate.name} style={{ marginBottom: "10px" }}>
+          <div key={rate.name} className={classes.rates_content}>
             <span>
-              {getCurrencyNameWithSuffix(rate.name)}: Продажа - {rate.sell},
-              Покупка - {rate.buy}
+              {getCurrencyNameWithSuffix(rate.name)}: {SELL} - {rate.sell},{" "}
+              {BUY} - {rate.buy}
             </span>
-            <button
-              style={{
-                marginLeft: "10px",
-                padding: "3px",
-                borderWidth: "1px",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-              onClick={() => onToggleFavourite(rate.name)}
-            >
+            <button onClick={() => onToggleFavourite(rate.name)}>
               {favourites.includes(rate.name)
-                ? "Убрать из избранного"
-                : "В избранное"}
+                ? REMOVE_FROM_FAVOURITES
+                : ADD_TO_FAVOURITES}
             </button>
           </div>
         ))}

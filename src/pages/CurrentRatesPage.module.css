@@ -1,0 +1,15 @@
+.header {
+  margin-bottom: 30px;
+}
+.base_currency_group {
+  margin-bottom: 10px;
+}
+.base_currency_group select {
+  margin-left: 10px;
+}
+.move_to_converter_btn {
+  padding: 3px;
+  border-width: 1px;
+  border-radius: 4px;
+  cursor: pointer;
+}

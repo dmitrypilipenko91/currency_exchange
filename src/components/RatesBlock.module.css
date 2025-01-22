@@ -1,0 +1,15 @@
+.header {
+  margin-bottom: 10px;
+}
+.rates_content {
+  margin-bottom: 10px;
+  width: 500px;
+  display: flex;
+  justify-content: space-between;
+}
+.rates_content button {
+  padding: 3px;
+  border-width: 1px;
+  border-radius: 4px;
+  cursor: pointer;
+}

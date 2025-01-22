@@ -1,0 +1,15 @@
+.header {
+  margin-bottom: 30px;
+}
+.converter_content {
+  margin-bottom: 10px;
+}
+.converter_content input {
+  margin-left: 10px;
+}
+.move_to_rates_btn {
+  padding: 3px;
+  border-width: 1px;
+  border-radius: 4px;
+  cursor: pointer;
+}
