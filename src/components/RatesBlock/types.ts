@@ -1,4 +1,4 @@
-import { CurrencyRates } from "../pages/types";
+import { CurrencyRates } from "../../pages/CurrentRatesPage/types";
 
 export interface RatesBlockProps {
   title: string;

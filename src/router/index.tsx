@@ -4,8 +4,8 @@ import {
   createRoutesFromElements,
 } from "react-router-dom";
 import { paths } from "../utils/paths";
-import ConverterPage from "../pages/ConverterPage";
-import CurrentRatesPage from "../pages/CurrentRatesPage";
+import ConverterPage from "../pages/ConverterPage/ConverterPage";
+import CurrentRatesPage from "../pages/CurrentRatesPage/CurrentRatesPage";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
