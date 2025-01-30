@@ -1,16 +1,16 @@
 import { useNavigate } from "react-router-dom";
-import { paths } from "../utils/paths";
+import { paths } from "../../utils/paths";
 import { useState, useEffect } from "react";
-import { useGetExchangeRates } from "../hooks/useGetExchangeRates";
+import { useGetExchangeRates } from "../../hooks/useGetExchangeRates";
 import { RatesForConverter } from "./types";
 import classes from "./ConverterPage.module.css";
 import {
-  CURRENCIES,
   CURRENCY_RATES,
   ERROR_TEXT,
   LOADER_TEXT,
   RATES_CONVERTER,
-} from "./constants";
+} from "../../utils/constants";
+import { initializeAmounts, processExchangeRates } from "../../utils/helpers";
 
 const ConverterPage = () => {
   const { data, isLoading, isError } = useGetExchangeRates();
@@ -25,30 +25,10 @@ const ConverterPage = () => {
 
   useEffect(() => {
     if (data) {
-      const rates: RatesForConverter = { [CURRENCIES.BYN]: 1 }; // BYN как базовая валюта
-      Object.entries(data).forEach(([key, value]) => {
-        if (key.endsWith("_in") && key.split("_").length === 2) {
-          const currency = key.replace("_in", "");
-          let rate = parseFloat(value as string);
-          if (currency === CURRENCIES.PLN) {
-            rate = rate / 10; // Курс для PLN за 1 единицу (в API данные за 10)
-          } else if (currency === CURRENCIES.RUB) {
-            rate = rate / 100; // Курс для RUB за 1 единицу (в API данные за 100)
-          }
-          if (rate > 0) {
-            rates[currency] = rate;
-          }
-        }
-      });
+      const rates = processExchangeRates(data);
+      const initialAmounts = initializeAmounts(rates);
       setCurrencies(rates);
-
-      // Инициализация значений для всех валют
-      setAmounts(
-        Object.keys(rates).reduce((acc, key) => {
-          acc[key] = 0;
-          return acc;
-        }, {} as { [key: string]: number })
-      );
+      setAmounts(initialAmounts);
     }
   }, [data]);
 
