@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import { useGetExchangeRates } from "../hooks/useGetExchangeRates";
-import RatesBlock from "../components/RatesBlock";
+import { APIRates, useGetExchangeRates } from "../../hooks/useGetExchangeRates";
+import RatesBlock from "../../components/RatesBlock/RatesBlock";
 import { useNavigate } from "react-router-dom";
-import { paths } from "../utils/paths";
-import { APIRates } from "../hooks/types";
+import { paths } from "../../utils/paths";
 import { ConvertedRates, CurrencyRates } from "./types";
-import { addBYN, convertRates } from "./helpers";
+import { addBYN, convertRates } from "../../utils/helpers";
 import classes from "./CurrentRatesPage.module.css";
 import {
   ALL_RATES,
@@ -18,7 +17,7 @@ import {
   LOADER_TEXT,
   RATES_CONVERTER,
   currenciesOptions,
-} from "./constants";
+} from "../../utils/constants";
 
 const CurrentRatesPage = () => {
   const { data: rates, isLoading, isError } = useGetExchangeRates();
